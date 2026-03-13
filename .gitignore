@@ -1,0 +1,23 @@
+# Config with credentials (users generate their own via init_config.py)
+daily-brief-config.json
+
+# Output files
+*.html
+!assets/report-template.html
+Data+AI全球日报_*.md
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
