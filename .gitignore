@@ -6,6 +6,9 @@ daily-brief-config.json
 !assets/report-template.html
 Data+AI全球日报_*.md
 
+# Push lock files
+.send_locks/
+
 # Python
 __pycache__/
 *.pyc

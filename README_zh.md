@@ -5,6 +5,7 @@
 > **[English Documentation →](README.md)**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Version](https://img.shields.io/badge/version-2.0-brightgreen.svg)](#changelog)
 [![Platform](https://img.shields.io/badge/platform-CodeBuddy%20%7C%20WorkBuddy-green.svg)](#)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink.svg)](../../sponsors)
 [![Bilingual](https://img.shields.io/badge/docs-EN%20%7C%20中文-orange.svg)](README.md)
@@ -30,7 +31,7 @@
 
 AI 就会自动完成：
 
-1. 🔍 **全网搜索** — 采集你所在行业的最新动态
+1. 🔍 **三阶段搜索** — 一手来源定向搜索 → 扩展发现 → 强制来源溯源
 2. 🎯 **严格过滤** — 只保留一手来源，去除噪音和标题党
 3. 📝 **结构化编写** — 生成带来源、摘要和影响分析的专业日报
 4. 📤 **多渠道推送** — 一键发送到 9 大渠道
@@ -52,12 +53,15 @@ AI 就会自动完成：
 
 ## ✨ 功能特色
 
-- 🔍 **自动情报采集** — 联网搜索 + 信源验证
+- 🔍 **三阶段搜索策略** — 厂商定向搜索 → 扩展发现 → 强制来源溯源，确保信息质量
 - 🎯 **严格信噪过滤** — 仅一手来源，拒绝搬运和标题党
 - 📝 **结构化输出** — Top Signals、Product & Tech、People & Views、Analyst Insights、Watchlist 五大板块
 - 🎯 **宁缺毋滥** — 板块无合格内容时留空，绝不降低准入标准凑数
 - 🌐 **9 大推送渠道** — 企微 · 钉钉 · 飞书 · Slack · Discord · Telegram · Teams · 邮件 · GitHub Pages
 - 🎨 **精美 HTML 报告** — 卡片式布局，来源链接可点击（链接仅在 HTML 完整版中呈现，摘要保持纯文本）
+- 📊 **3层优先级摘要提取** — 标题+今日变化+总判断 → 板块标题+新闻标题 → 一句话摘要按空间填充，严格控制在 4096 字节内
+- 🔒 **防重复推送** — 锁文件机制防止同一天日报重复发送
+- 📅 **周一周末回顾** — 周一自动扩展时效窗口至 72 小时覆盖周五至周日，条数上限放宽
 - ⚙️ **完全可配置** — 行业方向、厂商列表、输出语言、推送渠道
 - 🌍 **中英文双语** — 默认中文输出，可切换任何语言
 
@@ -70,10 +74,9 @@ data-ai-daily-brief-skill/
 ├── README_zh.md                # 中文文档（本文件）
 ├── LICENSE                     # MIT 开源协议
 ├── CONTRIBUTING.md             # 贡献指南
-├── daily-brief-config.json     # 配置文件（由 init_config.py 生成）
 ├── scripts/
 │   ├── init_config.py          # 初始化默认配置
-│   ├── send_wecom.py           # 🇨🇳 企业微信推送
+│   ├── send_wecom.py           # 🇨🇳 企业微信推送（3层摘要+防重复锁）
 │   ├── send_dingtalk.py        # 🇨🇳 钉钉推送
 │   ├── send_feishu.py          # 🇨🇳 飞书推送
 │   ├── send_slack.py           # 🌍 Slack 推送
@@ -123,6 +126,7 @@ python scripts/init_config.py
 
 # === 国内渠道 ===
 python scripts/send_wecom.py 2026-03-11          # 企业微信
+python scripts/send_wecom.py 2026-03-11 --force   # 强制重推
 python scripts/send_dingtalk.py 2026-03-11       # 钉钉
 python scripts/send_feishu.py 2026-03-11         # 飞书
 python scripts/send_feishu.py --card --link-url https://...  # 飞书交互卡片
@@ -144,6 +148,7 @@ python scripts/deploy_github.py 2026-03-11       # GitHub Pages
 
 ```json
 {
+  "version": "2.0",
   "adapters": {
     "wechatwork": { "enabled": true, "webhook_url": "你的企微 Webhook URL" },
     "dingtalk":   { "enabled": true, "webhook_url": "你的钉钉 URL", "secret": "可选加签密钥" },
@@ -158,6 +163,8 @@ python scripts/deploy_github.py 2026-03-11       # GitHub Pages
   "customization": {
     "language": "zh-CN",
     "max_items": 12,
+    "max_items_monday": 18,
+    "monday_window_hours": 72,
     "focus_areas": ["大数据", "数据平台", "数据治理", "..."]
   }
 }
@@ -295,8 +302,15 @@ python scripts/deploy_github.py 2026-03-11       # GitHub Pages
 
 - **行业领域**：大数据 · 数据平台 · 数据基础设施 · 数据治理 · 数据工程 · 湖仓架构 · 查询引擎 · 流批处理 · 向量检索 · 开源数据生态
 - **头部厂商**：AWS · Google Cloud · Azure · Databricks · Snowflake · 阿里云 · 腾讯云 · 华为云 · 火山引擎 · Confluent · MongoDB · ClickHouse · dbt Labs
-- **开源项目**：Iceberg · Hudi · Paimon · Delta Lake · Trino · Spark · Flink · Kafka · DuckDB · StarRocks · Doris
+- **开源项目**：Iceberg · Hudi · Paimon · Delta Lake · Trino · Spark · Flink · Kafka · DuckDB · StarRocks · Doris · SeaTunnel · Amoro
 - **分析师机构**：Gartner · Forrester · IDC · a16z · Sequoia · 信通院 · 赛迪研究院 · 艾瑞咨询 · 头部券商研报
+
+## 📝 更新记录
+
+| 版本 | 日期 | 更新摘要 |
+|------|------|---------|
+| **2.0** | 2026-03-16 | 三阶段搜索策略（定向→扩展→来源溯源强制执行）；3层优先级摘要提取算法；周一72小时周末回顾窗口；防重复推送机制；时效性红线判定规则；来源标注规范 |
+| **1.0** | 2026-03-09 | 首次发布，支持 9 大推送渠道、结构化五板块输出、中英文双语文档 |
 
 ## ❤️ 支持本项目
 

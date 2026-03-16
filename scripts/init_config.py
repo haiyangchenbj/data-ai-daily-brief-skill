@@ -12,37 +12,13 @@ import sys
 from pathlib import Path
 
 DEFAULT_CONFIG = {
+    "version": "2.0",
     "adapters": {
         "wechatwork": {
             "enabled": False,
             "type": "webhook",
             "webhook_url": "",
             "_comment": "填入企业微信群机器人的 Webhook URL"
-        },
-        "email": {
-            "enabled": False,
-            "type": "smtp",
-            "smtp_host": "",
-            "smtp_port": 587,
-            "smtp_user": "",
-            "smtp_password": "",
-            "from_addr": "",
-            "to_addrs": [],
-            "use_tls": True,
-            "_comment": "SMTP 邮件配置，密码建议使用环境变量 SMTP_PASSWORD"
-        },
-        "github": {
-            "enabled": False,
-            "type": "github_pages",
-            "github_user": "",
-            "github_repo": "data-ai-daily",
-            "_comment": "GitHub Pages 部署，Token 使用环境变量 GITHUB_TOKEN"
-        },
-        "slack": {
-            "enabled": False,
-            "type": "webhook",
-            "webhook_url": "",
-            "_comment": "Slack Incoming Webhook URL (api.slack.com/apps → Incoming Webhooks)"
         },
         "dingtalk": {
             "enabled": False,
@@ -57,6 +33,12 @@ DEFAULT_CONFIG = {
             "webhook_url": "",
             "secret": "",
             "_comment": "飞书群机器人 Webhook (群设置 → 群机器人 → 自定义机器人)"
+        },
+        "slack": {
+            "enabled": False,
+            "type": "webhook",
+            "webhook_url": "",
+            "_comment": "Slack Incoming Webhook URL (api.slack.com/apps → Incoming Webhooks)"
         },
         "discord": {
             "enabled": False,
@@ -76,6 +58,25 @@ DEFAULT_CONFIG = {
             "type": "webhook",
             "webhook_url": "",
             "_comment": "Microsoft Teams Incoming Webhook (频道 → Workflows 或 Connectors)"
+        },
+        "email": {
+            "enabled": False,
+            "type": "smtp",
+            "smtp_host": "",
+            "smtp_port": 587,
+            "smtp_user": "",
+            "smtp_password": "",
+            "from_addr": "",
+            "to_addrs": [],
+            "use_tls": True,
+            "_comment": "SMTP 邮件配置，密码建议使用环境变量 SMTP_PASSWORD"
+        },
+        "github": {
+            "enabled": False,
+            "type": "github_pages",
+            "github_user": "",
+            "github_repo": "data-ai-daily",
+            "_comment": "GitHub Pages 部署，Token 使用环境变量 GITHUB_TOKEN"
         }
     },
     "cron": [
@@ -92,6 +93,8 @@ DEFAULT_CONFIG = {
     "customization": {
         "language": "zh-CN",
         "max_items": 12,
+        "max_items_monday": 18,
+        "monday_window_hours": 72,
         "focus_areas": [
             "大数据", "数据平台", "数据基础设施",
             "数据治理", "数据工程", "湖仓架构",
@@ -107,14 +110,16 @@ DEFAULT_CONFIG = {
             "tier2": [
                 "Confluent", "MongoDB", "Elastic", "ClickHouse",
                 "Cloudera", "Starburst", "dbt Labs",
-                "Fivetran", "Airbyte", "Dataiku", "Palantir"
+                "Fivetran", "Airbyte", "Dataiku", "Palantir",
+                "百度智能云", "京东云"
             ]
         },
         "open_source_projects": [
             "Iceberg", "Hudi", "Paimon", "Delta Lake",
             "Trino", "Spark", "Flink", "Ray", "Airflow",
             "Kafka", "dbt", "ClickHouse", "DuckDB",
-            "Milvus", "Weaviate", "StarRocks", "Doris"
+            "Milvus", "Weaviate", "StarRocks", "Doris",
+            "SeaTunnel", "Amoro"
         ]
     }
 }
@@ -136,6 +141,9 @@ def main():
     print(f"[成功] 配置文件已生成: {output_file}")
     print("\n请编辑配置文件，至少填写一个推送渠道的信息:")
     print("  - 企业微信: adapters.wechatwork.webhook_url")
+    print("  - 钉钉:     adapters.dingtalk.webhook_url")
+    print("  - 飞书:     adapters.feishu.webhook_url")
+    print("  - Slack:    adapters.slack.webhook_url")
     print("  - 邮件:     adapters.email (smtp_host, smtp_user 等)")
     print("  - GitHub:   adapters.github (github_user)")
 
