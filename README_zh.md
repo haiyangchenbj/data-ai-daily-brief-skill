@@ -5,7 +5,7 @@
 > **[English Documentation →](README.md)**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0-brightgreen.svg)](#changelog)
+[![Version](https://img.shields.io/badge/version-2.1-brightgreen.svg)](#changelog)
 [![Platform](https://img.shields.io/badge/platform-CodeBuddy%20%7C%20WorkBuddy-green.svg)](#)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink.svg)](../../sponsors)
 [![Bilingual](https://img.shields.io/badge/docs-EN%20%7C%20中文-orange.svg)](README.md)
@@ -309,6 +309,7 @@ python scripts/deploy_github.py 2026-03-11       # GitHub Pages
 
 | 版本 | 日期 | 更新摘要 |
 |------|------|---------|
+| **2.1** | 2026-03-17 | 无截断摘要重构：仅提取以句号/分号结尾的完整句子，绝不硬截断；新增 `_smart_shorten` 渐进降级策略（句子级精简→降为仅标题→移除整行）替代 `_truncate_line_to_bytes`；彻底消除 `...` 省略号截断 |
 | **2.0** | 2026-03-16 | 三阶段搜索策略（定向→扩展→来源溯源强制执行）；3层优先级摘要提取算法；周一72小时周末回顾窗口；防重复推送机制；时效性红线判定规则；来源标注规范 |
 | **1.0** | 2026-03-09 | 首次发布，支持 9 大推送渠道、结构化五板块输出、中英文双语文档 |
 

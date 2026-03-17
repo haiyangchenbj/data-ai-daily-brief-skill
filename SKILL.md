@@ -1,6 +1,6 @@
 ---
 name: data-ai-daily-brief
-version: "2.0"
+version: "2.1"
 description: |
   AI-powered industry intelligence daily brief generator. This skill automatically searches,
   filters, writes, and delivers structured daily briefings for any industry.
