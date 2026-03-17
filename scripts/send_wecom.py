@@ -88,71 +88,85 @@ def find_file(date_str, ext, search_dirs=None):
 def _extract_first_complete_sentence(text):
     """从文本中提取第一个语义完整的句子。
 
-    规则：
+    v3.4 规则：
     1. 按句号/分号切分，取第一句
     2. 如果结果以冒号结尾（引导句，如"核心论点包括："），
        说明不是自足句，返回 None
-    3. 如果整段没有句号/分号，取前80字符并加省略号
+    3. 如果整段没有句号/分号，返回 None（绝不硬截断）
     """
     if not text:
         return None
 
-    first_sent = text
+    first_sent = None
     for sep in ["。", "；"]:
-        si = first_sent.find(sep)
+        si = text.find(sep)
         if si != -1:
-            first_sent = first_sent[:si + 1]
-            break
+            candidate = text[:si + 1]
+            if first_sent is None or len(candidate) < len(first_sent):
+                first_sent = candidate
+
+    if first_sent is None:
+        return None
 
     # 检查是否以冒号结尾（引导句 — 后面跟列表，截取后会"半句"）
     if first_sent.rstrip().endswith("：") or first_sent.rstrip().endswith(":"):
         return None
 
-    # 如果截取后仍然很长，限制长度
-    if len(first_sent) > 100:
-        for ci in range(80, min(len(first_sent), 100)):
-            if first_sent[ci] in "，,、":
-                first_sent = first_sent[:ci + 1].rstrip("，,、") + "。"
-                break
-        else:
-            first_sent = first_sent[:80] + "..."
-
     return first_sent
 
 
-def _truncate_line_to_bytes(text, max_bytes):
-    """将文本截断到指定字节数内，在字符边界处截断。"""
+def _smart_shorten(text, target_bytes):
+    """在句子边界处精简文本到目标字节数以内。
+
+    v3.4 核心原则：完整句子 or 不缩减，绝不硬截断。
+    如果找不到足够短的完整句子，返回 None 表示无法精简（由上层决定移除整行）。
+    """
     encoded = text.encode("utf-8")
-    if len(encoded) <= max_bytes:
+    if len(encoded) <= target_bytes:
         return text
-    for i in range(len(text), 0, -1):
-        if len(text[:i].encode("utf-8")) <= max_bytes - 6:
-            return text[:i] + "..."
-    return "..."
+
+    # 在句号/分号处截取，找最后一个不超限的完整句子
+    best = None
+    for sep in ["。", "；"]:
+        start = 0
+        while True:
+            idx = text.find(sep, start)
+            if idx == -1:
+                break
+            candidate = text[:idx+1]
+            if len(candidate.encode("utf-8")) <= target_bytes:
+                best = candidate
+                start = idx + 1
+            else:
+                break
+
+    return best
 
 
 def extract_summary_from_md(md_path):
     """从 Markdown 文件中提取精简摘要（不超过 4096 字节）。
 
-    三层优先级填充策略:
-      层级1（必选）: 大标题 + "今日最重要的N个变化"（精简版）+ 总判断（精简版）
+    提取逻辑（v3.4）:
+      层级1（必选）: 大标题 + "今日最重要的N个变化"（完整版）+ 总判断
       层级2（必选）: 各板块标题（## A. ~ ## E.）+ 每条新闻的标题行
       层级3（可选，按空间填充）: 每条新闻的一句完整摘要
 
-    关键特性:
-      - 今日变化每条限制在一句话内（去掉长篇说明）
-      - 总判断截取核心观点，不保留细节展开
-      - 层级3首句必须是语义完整的句子，不纳入"...包括："类引导句
+    v3.4 核心原则 — 完整句子 or 不出现，绝不截断:
+      - 每一行要么是原文中句号/分号结尾的完整句子，要么整行不出现
+      - 层级3摘要：只取以句号/分号结尾的首句，找不到就放弃（该条不展示摘要）
+      - 超限精简：在句号/分号处截取完整首句；无法精简就降级为仅标题或移除整行
+      - 不使用任何 "..." 省略号截断
       - 摘要中不带任何链接，来源链接仅在 HTML 完整版中呈现
-      - 严格 4096 字节控制（按 UTF-8 字节计算）
     """
     with open(md_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     lines = content.split("\n")
 
-    # ── 层级1: 大标题 + 今日变化（精简）+ 总判断（精简）──
+    # ── 层级1: 大标题 + 今日变化 + 总判断 ──
     layer1_lines = []
+    top_change_indices = []  # layer1_lines 中编号条目的索引
+    judgment_index = None    # layer1_lines 中总判断的索引
     in_top_changes = False
     found_summary_judgment = False
 
@@ -182,12 +196,17 @@ def extract_summary_from_md(md_path):
                     stripped.startswith("> 总判断")
                 ):
                     judgment = stripped
-                    if len(judgment.encode("utf-8")) > 250:
-                        judgment = _truncate_line_to_bytes(judgment, 250)
+                    # 取到第一个句号（保留完整首句）
+                    for sep in ["。"]:
+                        si = judgment.find(sep)
+                        if si != -1 and si < len(judgment) - 1:
+                            judgment = judgment[:si+1]
+                            break
                     layer1_lines.append("")
                     layer1_lines.append(judgment)
+                    judgment_index = len(layer1_lines) - 1
                     found_summary_judgment = True
-                # 编号条目：截取一句话
+                # 编号条目：取到第一个句号，保留完整首句
                 elif re.match(r"^\d+\.\s+\*\*", stripped):
                     sent = stripped
                     for sep in ["。", "；"]:
@@ -195,9 +214,8 @@ def extract_summary_from_md(md_path):
                         if si != -1 and si < len(sent) - 1:
                             sent = sent[:si + 1]
                             break
-                    if len(sent.encode("utf-8")) > 200:
-                        sent = _truncate_line_to_bytes(sent, 200)
                     layer1_lines.append(sent)
+                    top_change_indices.append(len(layer1_lines) - 1)
                 continue
 
         # 总判断（在今日变化区域外）
@@ -207,10 +225,14 @@ def extract_summary_from_md(md_path):
             stripped.startswith("> 总判断")
         ):
             judgment = stripped
-            if len(judgment.encode("utf-8")) > 250:
-                judgment = _truncate_line_to_bytes(judgment, 250)
+            for sep in ["。"]:
+                si = judgment.find(sep)
+                if si != -1 and si < len(judgment) - 1:
+                    judgment = judgment[:si+1]
+                    break
             layer1_lines.append("")
             layer1_lines.append(judgment)
+            judgment_index = len(layer1_lines) - 1
             found_summary_judgment = True
             continue
 
@@ -352,27 +374,84 @@ def extract_summary_from_md(md_path):
     # ── 组装最终摘要 ──
     tail = "\n\n> 完整版见下方 HTML 文档"
     MAX_BYTES = 4096
+    tail_bytes = len(tail.encode("utf-8"))
 
-    # 组装层级1 + 层级2
-    base_parts = ["\n".join(layer1_lines).strip()]
-    base_parts.append("")
-    for text, _ in layer2_lines:
-        base_parts.append(text)
-    base_text = "\n".join(base_parts).strip()
+    def _assemble_base():
+        """用 layer1_lines 和 layer2_lines 组装基础文本。"""
+        parts = ["\n".join(layer1_lines).strip()]
+        parts.append("")
+        for text, _ in layer2_lines:
+            parts.append(text)
+        text = "\n".join(parts).strip()
+        # 剥离 Markdown 链接
+        text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+        return text
 
-    # 剥离 Markdown 链接
-    base_text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', base_text)
-
-    # 加尾部
+    base_text = _assemble_base()
     base_with_tail = base_text + tail
     base_bytes = len(base_with_tail.encode("utf-8"))
 
     if base_bytes > MAX_BYTES:
-        target = MAX_BYTES - len(tail.encode("utf-8"))
-        for ci in range(len(base_text), 0, -1):
-            if len(base_text[:ci].encode("utf-8")) <= target:
-                return base_text[:ci] + tail
-        return tail
+        # 超限策略 v3.4：渐进降级，只在完整句子边界精简，无法精简则移除整行
+        overflow = base_bytes - MAX_BYTES
+
+        # 第1轮：逐条精简今日变化的编号条目（从最后一条开始）
+        for idx in reversed(top_change_indices):
+            if overflow <= 0:
+                break
+            original = layer1_lines[idx]
+            original_bytes = len(original.encode("utf-8"))
+            target = max(original_bytes - overflow, 80)
+            shortened = _smart_shorten(original, target)
+            if shortened is not None:
+                saved = original_bytes - len(shortened.encode("utf-8"))
+                if saved > 0:
+                    layer1_lines[idx] = shortened
+                    overflow -= saved
+            else:
+                # 无法在句子边界精简 → 只保留标题部分（冒号前）
+                colon_idx = original.find("：")
+                if colon_idx == -1:
+                    colon_idx = original.find(":")
+                if colon_idx != -1:
+                    title_only = original[:colon_idx+1].rstrip("：:").rstrip()
+                    saved = original_bytes - len(title_only.encode("utf-8"))
+                    if saved > 0:
+                        layer1_lines[idx] = title_only
+                        overflow -= saved
+
+        # 第2轮：如果还超限，精简总判断
+        if overflow > 0 and judgment_index is not None:
+            original = layer1_lines[judgment_index]
+            original_bytes = len(original.encode("utf-8"))
+            target = max(original_bytes - overflow, 100)
+            shortened = _smart_shorten(original, target)
+            if shortened is not None:
+                saved = original_bytes - len(shortened.encode("utf-8"))
+                if saved > 0:
+                    layer1_lines[judgment_index] = shortened
+                    overflow -= saved
+            else:
+                # 总判断也无法精简 → 移除整行
+                saved = original_bytes
+                layer1_lines[judgment_index] = ""
+                overflow -= saved
+
+        # 第3轮：如果还超限，从最后一个板块开始移除层级2条目
+        if overflow > 0:
+            for i in range(len(layer2_lines) - 1, -1, -1):
+                if overflow <= 0:
+                    break
+                text, marker = layer2_lines[i]
+                if text and text != "---":
+                    saved = len(("\n" + text).encode("utf-8"))
+                    layer2_lines[i] = ("", None)
+                    overflow -= saved
+
+        # 重新组装
+        base_text = _assemble_base()
+        base_with_tail = base_text + tail
+        base_bytes = len(base_with_tail.encode("utf-8"))
 
     # 有剩余空间，尝试插入层级3
     remaining = MAX_BYTES - base_bytes
