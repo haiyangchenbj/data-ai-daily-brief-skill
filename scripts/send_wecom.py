@@ -3,10 +3,10 @@
 Data+AI Daily Brief — 企业微信推送脚本
 自动识别日报文件，提取3层优先级摘要并推送到企业微信群。
 
-摘要提取策略（v2.0）:
+摘要提取策略（v3.6）:
   层级1（必选）: 大标题 + 今日变化（精简版）+ 总判断（精简版）
   层级2（必选）: 各板块标题 + 每条新闻标题行
-  层级3（可选）: 每条新闻一句完整摘要，按剩余字节空间填充
+  层级3（可选）: 每条新闻的企微摘要（优先）或首句摘要，按剩余字节空间填充
 
 用法:
   python send_wecom.py                        # 推送今天的日报
@@ -82,17 +82,19 @@ def find_file(date_str, ext, search_dirs=None):
 
 
 # ─────────────────────────────────────────────────────────
-# 摘要提取核心算法（v2.0 三层优先级填充）
+# 摘要提取核心算法（v3.6 三层优先级填充 + 企微摘要字段优先提取）
 # ─────────────────────────────────────────────────────────
 
-def _extract_first_complete_sentence(text):
+def _extract_first_complete_sentence(text, max_bytes=150):
     """从文本中提取第一个语义完整的句子。
 
-    v3.4 规则：
+    v3.5 规则：
     1. 按句号/分号切分，取第一句
     2. 如果结果以冒号结尾（引导句，如"核心论点包括："），
        说明不是自足句，返回 None
     3. 如果整段没有句号/分号，返回 None（绝不硬截断）
+    4. (v3.5 新增) 如果提取结果超过 max_bytes，说明不是精简摘要
+       而是原文首段，返回 None
     """
     if not text:
         return None
@@ -110,6 +112,10 @@ def _extract_first_complete_sentence(text):
 
     # 检查是否以冒号结尾（引导句 — 后面跟列表，截取后会"半句"）
     if first_sent.rstrip().endswith("：") or first_sent.rstrip().endswith(":"):
+        return None
+
+    # v3.5: 超长句子 → 不是精简摘要，是原文首段，放弃
+    if len(first_sent.encode("utf-8")) > max_bytes:
         return None
 
     return first_sent
@@ -146,17 +152,20 @@ def _smart_shorten(text, target_bytes):
 def extract_summary_from_md(md_path):
     """从 Markdown 文件中提取精简摘要（不超过 4096 字节）。
 
-    提取逻辑（v3.4）:
+    提取逻辑（v3.6）:
       层级1（必选）: 大标题 + "今日最重要的N个变化"（完整版）+ 总判断
       层级2（必选）: 各板块标题（## A. ~ ## E.）+ 每条新闻的标题行
-      层级3（可选，按空间填充）: 每条新闻的一句完整摘要
+      层级3（可选，按空间填充）: 每条新闻的企微摘要
+
+    v3.6 变更 — 企微摘要字段优先提取:
+      - Markdown 中每条新闻新增 `> 企微摘要：xxx` 字段（由 Prompt 端生成）
+      - 提取时优先使用该字段（AI 对整段做语义压缩，比首句提取质量高得多）
+      - 如果 MD 中没有企微摘要字段（兼容旧日报），回退到原有首句提取
+      - 空间自适应：剩余空间够就放完整摘要，不够就逐条跳过
 
     v3.4 核心原则 — 完整句子 or 不出现，绝不截断:
-      - 每一行要么是原文中句号/分号结尾的完整句子，要么整行不出现
-      - 层级3摘要：只取以句号/分号结尾的首句，找不到就放弃（该条不展示摘要）
-      - 超限精简：在句号/分号处截取完整首句；无法精简就降级为仅标题或移除整行
+      - 每一行要么是完整句子，要么整行不出现
       - 不使用任何 "..." 省略号截断
-      - 摘要中不带任何链接，来源链接仅在 HTML 完整版中呈现
     """
     with open(md_path, "r", encoding="utf-8") as f:
         content = f.read()
@@ -247,9 +256,16 @@ def extract_summary_from_md(md_path):
     pending_summary_item = None
 
     def _flush_multiline_summary():
-        """处理多行摘要：如果首行是引导句，从后续列表项提取首条内容。"""
+        """处理多行摘要：回退逻辑（仅在没有企微摘要时使用）。"""
         nonlocal pending_summary_lines, pending_summary_item
         if not pending_summary_lines or not pending_summary_item:
+            pending_summary_lines = []
+            pending_summary_item = None
+            return
+
+        # v3.6: 如果该条目已有企微摘要，跳过首句提取
+        existing_markers = {m for m, _ in layer3_candidates}
+        if pending_summary_item in existing_markers:
             pending_summary_lines = []
             pending_summary_item = None
             return
@@ -269,7 +285,7 @@ def extract_summary_from_md(md_path):
         if sent:
             layer3_candidates.append((
                 pending_summary_item,
-                f'> <font color="comment">{sent}</font>'
+                f'> {sent}'
             ))
 
         pending_summary_lines = []
@@ -343,12 +359,34 @@ def extract_summary_from_md(md_path):
                     pending_summary_lines.append(stripped)
                 continue
 
+        # v3.6: 企微摘要字段（优先级最高）
+        # 格式: > 企微摘要：xxx  或  > 企微摘要: xxx
+        if stripped.startswith("> 企微摘要") and current_item_idx:
+            if collecting_summary:
+                _flush_multiline_summary()
+                collecting_summary = False
+            colon_idx = stripped.find("：")
+            if colon_idx == -1:
+                colon_idx = stripped.find(":")
+            if colon_idx != -1:
+                wecom_summary = stripped[colon_idx+1:].strip()
+                if wecom_summary:
+                    # 标记该条目已有企微摘要，后续首句提取不再覆盖
+                    existing_markers = {m for m, _ in layer3_candidates}
+                    # 如果之前首句提取已经加了，先移除
+                    layer3_candidates = [(m, t) for m, t in layer3_candidates if m != current_item_idx]
+                    layer3_candidates.append((
+                        current_item_idx,
+                        f'> {wecom_summary}'
+                    ))
+            continue
+
         # blockquote 留空板块说明
         if stripped.startswith("> 本期") and current_item_idx is None:
             layer2_lines.append((stripped, None))
             continue
 
-        # Watchlist 的 **情况** 行
+        # Watchlist 条目的 **情况** 行（回退逻辑：没有企微摘要时使用）
         if stripped.startswith("**情况**") or stripped.startswith("**情况：**"):
             colon_idx = stripped.find("：")
             if colon_idx == -1:
@@ -357,10 +395,13 @@ def extract_summary_from_md(md_path):
                 after_colon = stripped[colon_idx + 1:].strip()
                 sent = _extract_first_complete_sentence(after_colon)
                 if current_item_idx and sent:
-                    layer3_candidates.append((
-                        current_item_idx,
-                        f'> <font color="comment">{sent}</font>'
-                    ))
+                    # 只在没有企微摘要时才用首句回退
+                    existing_markers = {m for m, _ in layer3_candidates}
+                    if current_item_idx not in existing_markers:
+                        layer3_candidates.append((
+                            current_item_idx,
+                            f'> {sent}'
+                        ))
             continue
 
         # Analyst Insights 的 **核心论点与数据**
