@@ -5,7 +5,7 @@
 > **[中文文档 →](README_zh.md)**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.1-brightgreen.svg)](#changelog)
+[![Version](https://img.shields.io/badge/version-3.0-brightgreen.svg)](#changelog)
 [![Platform](https://img.shields.io/badge/platform-CodeBuddy%20%7C%20WorkBuddy-green.svg)](#)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink.svg)](../../sponsors)
 [![Bilingual](https://img.shields.io/badge/docs-EN%20%7C%20中文-orange.svg)](README_zh.md)
@@ -55,7 +55,7 @@ The default configuration covers **Data + AI infrastructure** (data platforms, l
 
 - 🔍 **3-phase search strategy** — targeted vendor search → expanded discovery → mandatory source tracing
 - 🎯 **Strict signal-to-noise filtering** — first-hand sources only, no rewrites or clickbait
-- 📝 **Structured output** — Top Signals, Product & Tech, People & Views, Analyst Insights, Watchlist
+- 📝 **Structured output** — Top Signals, Product & Tech, Views & Research, Capital & Corporate, Watchlist
 - 🎯 **Quality over quantity** — sections left empty rather than filled with low-relevance content ("less is more" principle)
 - 🌐 **9 delivery channels** — WeChat Work · DingTalk · Feishu · Slack · Discord · Telegram · Teams · Email · GitHub Pages
 - 🎨 **Beautiful HTML reports** — card-based layout with clickable source links (links only in HTML, summaries stay clean text)
@@ -309,6 +309,7 @@ The built-in configuration covers:
 
 | Version | Date | Summary |
 |---------|------|---------|
+| **3.0** | 2026-03-20 | Major restructure: merge C.People & Views + D.Analyst Insights → C.Views & Research; add D.Capital & Corporate (funding/earnings/IPO/M&A with inline type tags); add 3-level information confidence (Level A/B/C); mandatory cross-section dedup self-check; new Step 5 Review & Fix (6 checks before publish); "Top 3 Points" now 15-30 char trend judgments (no product names/numbers); verdict ≤120 chars, no event detail repetition; add dedicated funding/M&A search queries; item count 10-14 (Monday 14-20) |
 | **2.1** | 2026-03-17 | No-truncation summary rewrite: complete-sentence-only extraction (never hard-truncate); `_smart_shorten` with progressive degradation (sentence-level → title-only → remove line) replacing `_truncate_line_to_bytes`; eliminates all `...` ellipsis artifacts |
 | **2.0** | 2026-03-16 | 3-phase search strategy with mandatory source tracing; 3-layer priority summary extraction; Monday 72-hour weekend catch-up window; duplicate push prevention; strict timeliness red-line rules; source labeling standards |
 | **1.0** | 2026-03-09 | Initial release with 9 delivery channels, structured 5-section output, bilingual docs |

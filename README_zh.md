@@ -5,7 +5,7 @@
 > **[English Documentation →](README.md)**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.1-brightgreen.svg)](#changelog)
+[![Version](https://img.shields.io/badge/version-3.0-brightgreen.svg)](#changelog)
 [![Platform](https://img.shields.io/badge/platform-CodeBuddy%20%7C%20WorkBuddy-green.svg)](#)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink.svg)](../../sponsors)
 [![Bilingual](https://img.shields.io/badge/docs-EN%20%7C%20中文-orange.svg)](README.md)
@@ -55,7 +55,7 @@ AI 就会自动完成：
 
 - 🔍 **三阶段搜索策略** — 厂商定向搜索 → 扩展发现 → 强制来源溯源，确保信息质量
 - 🎯 **严格信噪过滤** — 仅一手来源，拒绝搬运和标题党
-- 📝 **结构化输出** — Top Signals、Product & Tech、People & Views、Analyst Insights、Watchlist 五大板块
+- 📝 **结构化输出** — Top Signals、Product & Tech、Views & Research、Capital & Corporate、Watchlist 五大板块
 - 🎯 **宁缺毋滥** — 板块无合格内容时留空，绝不降低准入标准凑数
 - 🌐 **9 大推送渠道** — 企微 · 钉钉 · 飞书 · Slack · Discord · Telegram · Teams · 邮件 · GitHub Pages
 - 🎨 **精美 HTML 报告** — 卡片式布局，来源链接可点击（链接仅在 HTML 完整版中呈现，摘要保持纯文本）
@@ -309,6 +309,7 @@ python scripts/deploy_github.py 2026-03-11       # GitHub Pages
 
 | 版本 | 日期 | 更新摘要 |
 |------|------|---------|
+| **3.0** | 2026-03-20 | 重大结构重组：C.People & Views + D.Analyst Insights 合并为 C.Views & Research；新增 D.Capital & Corporate（投融资/财报/IPO/收购兼并，带 inline 类型标签）；新增信息置信度三级分层（Level A/B/C）；强制跨板块去重自检；新增 Step 5 Review & 修正（6项检查）；「今日3点」改为 15-30 字趋势判断（不含产品名/数字）；总判断 ≤120 字，不可重复事件细节；新增投融资定向搜索；总量调整为 10-14 条（周一 14-20 条） |
 | **2.1** | 2026-03-17 | 无截断摘要重构：仅提取以句号/分号结尾的完整句子，绝不硬截断；新增 `_smart_shorten` 渐进降级策略（句子级精简→降为仅标题→移除整行）替代 `_truncate_line_to_bytes`；彻底消除 `...` 省略号截断 |
 | **2.0** | 2026-03-16 | 三阶段搜索策略（定向→扩展→来源溯源强制执行）；3层优先级摘要提取算法；周一72小时周末回顾窗口；防重复推送机制；时效性红线判定规则；来源标注规范 |
 | **1.0** | 2026-03-09 | 首次发布，支持 9 大推送渠道、结构化五板块输出、中英文双语文档 |
