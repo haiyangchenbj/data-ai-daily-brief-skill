@@ -1,6 +1,6 @@
 ---
 name: data-ai-daily-brief
-version: "3.0"
+version: "4.2"
 description: |
   AI-powered industry intelligence daily brief generator. This skill automatically searches,
   filters, writes, and delivers structured daily briefings for any industry.
@@ -58,13 +58,18 @@ disable: false
 中文搜索：
 1. `site:cloud.tencent.com OR site:help.aliyun.com 数据 发布`
 2. `site:volcengine.com OR site:huaweicloud.com 数据 公告`
-3. `site:caict.ac.cn OR site:ccidreport.com OR site:cesi.cn 数据 发布 报告`
+3. `site:caict.ac.cn OR site:ccidreport.com OR site:cesi.cn 数据 发布 报告`（辅助，这些站点索引差，不能作为覆盖国内机构的唯一手段）
+4. `信通院 OR 中国信息通信研究院 数据 报告 发布`
+5. `赛迪研究院 OR CCID 数据 报告`
+6. `国家数据局 数据 政策 OR 规划 OR 标准`
 
 **投融资定向搜索（必须执行）**：
 1. `(Databricks OR Snowflake OR Confluent OR ClickHouse OR dbt) funding OR acquisition OR IPO`
 2. `data platform OR data infrastructure funding round`
 3. `数据平台 OR 大数据 融资 OR 收购 OR 上市`
 4. `(Databricks OR Snowflake OR Palantir OR Elastic OR Cloudera) earnings OR revenue OR quarterly results`
+5. `site:news.crunchbase.com OR site:techcrunch.com "venture capital" OR "funding" data`
+6. `site:cbinsights.com data OR analytics report`
 
 **阶段二：扩展搜索（补充覆盖）**
 
@@ -80,6 +85,9 @@ disable: false
 1. `数据平台 OR 数据基础设施 发布 公告`
 2. `湖仓一体 OR 数据湖 OR 数据治理 新品`
 3. `阿里云 OR 腾讯云 OR 华为云 数据 发布`
+4. `艾瑞咨询 OR 亿欧智库 数据平台 OR 大数据 报告`
+5. `国家数据局 OR 数据要素 政策 OR 标准 OR 规划`
+6. `"data platform" OR "data infrastructure" partnership OR integration OR collaboration {date_range}`
 
 **阶段三：来源溯源（强制执行）**
 
@@ -133,13 +141,15 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 
 **重点跟踪厂商：** Databricks、Snowflake、Google Cloud、AWS、阿里云大数据、Elastic、Cloudera、华为云大数据、Palantir
 
-**信息源：** SiliconANGLE Big Data、DBTA (Database Trends and Applications)、InfoQ 大数据、PR Newswire、Business Wire、SEC EDGAR（美股财报）、各公司 IR 页面
+**信息源：** SiliconANGLE Big Data、DBTA (Database Trends and Applications)、InfoQ 大数据、PR Newswire、Business Wire、SEC EDGAR（美股财报）、各公司 IR 页面、Crunchbase News、CB Insights、PitchBook News、TechCrunch Venture
 
 #### 分析师机构
 
-**全球头部：** Gartner、Forrester、IDC、a16z、Sequoia、Bessemer
+**全球头部：** Gartner、Forrester、IDC、a16z、Sequoia、Bessemer、Futurum Group、Constellation Research、Wikibon/SiliconANGLE Research
 
 **国内研究机构：** 信通院、赛迪研究院、电子标准院、艾瑞咨询、亿欧智库
+
+**政策与标准机构：** 国家数据局、工信部（数据相关政策）
 
 **头部券商研报：** 国内外头部券商中与数据平台直接相关的核心论点和数据
 
@@ -218,7 +228,8 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 
 收录两类高价值信息：关键人物的原始观点，以及高公信力机构的正式研究。
 - **人物观点：** 创始人、CEO、CTO 等在采访、演讲、博客、X、LinkedIn 中的原始表达
-- **机构研究：** Gartner / Forrester / IDC / 信通院 / 赛迪 / 头部券商的官方报告
+- **机构研究：** Gartner / Forrester / IDC / Omdia / Futurum Group / Constellation Research / Wikibon、信通院 / 赛迪 / 头部券商的官方报告
+- **政策与标准：** 国家数据局、工信部等政府机构发布的与数据平台、数据要素、数据治理直接相关的政策文件、标准规范（须为正式发布）
 
 每条包含：人物/机构名称、来源、核心观点、映射到数据平台的判断、**企微摘要**
 
@@ -261,19 +272,30 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 
 #### 输出要求
 
+**重要性排序与渠道差异化：**
+
+搜索范围的扩展可能带来更多候选信息。必须严格按重要性排序，不能因为来源多了就降低门槛：
+
+1. **所有候选信息按重要性排序**：对数据平台的实际影响 > 来源权威性 > 话题热度
+2. **企微精简版**：保持原定条数上限（A≤3、B≤6、C≤5、D≤4、E≤3），只选最重要的条目
+3. **HTML 完整版**：各板块可适当放宽 2-3 条（A 仍≤3、B≤8、C≤7、D≤6、E≤5）
+4. **宁缺毋滥原则不变**：扩展的是搜索覆盖面，不是准入标准
+
 - 输出中文，专业、简洁、克制
 - 每条信息必须有：来源（具体链接或出处）、摘要、影响判断
-- 总量控制在 10-14 条（周一为 14-20 条），宁少勿滥
+- 总量控制在 10-14 条（周一为 14-20 条），宁少勿滥。此为企微版上限；HTML 版可上浮至 16-20 条（周一 20-26 条）
 - 不杜撰数据
 
 ### Step 4: 生成输出文件
 
 1. **Markdown 文件**：`Data+AI全球日报_{date}.md`
    - 每条新闻包含 `> 企微摘要：xxx` 行
+   - 包含全部条目（含 HTML 扩展条目），通过企微摘要行区分哪些进入精简推送
 2. **HTML 文件**：参考 `assets/report-template.html` 模板样式，生成美观的 `Data+AI全球日报_{date}.html`
    - HTML 中每条信息的来源带有可点击的超链接
    - 投融资板块使用类型标签（彩色标记区分投融资/财报/IPO/收购兼并）
    - **不包含企微摘要行**
+   - 包含全部条目（企微精简版条目 + HTML 扩展条目）
 
 ### Step 5: Review & 修正
 
