@@ -5,7 +5,7 @@
 > **[English Documentation →](README.md)**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-3.0-brightgreen.svg)](#changelog)
+[![Version](https://img.shields.io/badge/version-4.2-brightgreen.svg)](#changelog)
 [![Platform](https://img.shields.io/badge/platform-CodeBuddy%20%7C%20WorkBuddy-green.svg)](#)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink.svg)](../../sponsors)
 [![Bilingual](https://img.shields.io/badge/docs-EN%20%7C%20中文-orange.svg)](README.md)
