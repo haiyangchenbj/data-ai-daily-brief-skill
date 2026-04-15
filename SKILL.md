@@ -1,13 +1,27 @@
 ---
 name: data-ai-daily-brief
-version: "4.2"
-description: |
-  AI-powered industry intelligence daily brief generator. This skill automatically searches,
-  filters, writes, and delivers structured daily briefings for any industry.
-  Default configuration covers Data+AI (data platforms, lakehouse, streaming, governance, etc.),
-  but can be customized for FinTech, HealthTech, Cybersecurity, DevTools, or any domain.
-  Trigger keywords: daily brief, 日报, industry report, 行业日报, data+ai report, 数据平台日报,
-  全球日报, industry newsletter, intelligence brief, 情报简报.
+version: "4.3.2"
+description: >
+  AI-powered industry intelligence daily brief generator for the Data+AI sector.
+  Automatically searches, filters, writes, and delivers structured daily briefings
+  covering data platforms, lakehouse, streaming, governance, and data infrastructure.
+  Customizable for any industry via config.json. Includes 6-step workflow with mandatory
+  review gate, confidence-level filtering, and multi-channel delivery.
+
+  AI 驱动的 Data+AI 行业情报日报生成器。自动搜集、过滤、撰写并推送结构化行业日报，
+  覆盖数据平台、湖仓一体、流处理、数据治理等领域。支持通过 config.json 切换至任意行业。
+  含 6 步工作流（含审核门禁）、置信度分层过滤、多渠道推送。
+read_when:
+  - daily brief
+  - 日报
+  - industry report
+  - 行业日报
+  - data+ai report
+  - 数据平台日报
+  - 全球日报
+  - industry newsletter
+  - intelligence brief
+  - 情报简报
 allowed-tools:
   - read_file
   - write_to_file
@@ -26,13 +40,13 @@ disable: false
 
 当用户请求生成日报时，按以下步骤执行：
 
-### Step 1: 确认配置
+### Step 1: 确认配置 [确定性]
 
-1. 读取工作区中的 `daily-brief-config.json` 配置文件（如果存在）
+1. 读取工作区中的 `config.json` 配置文件（如果存在）
 2. 如不存在，使用 `scripts/init_config.py` 初始化默认配置
 3. 确认目标日期（默认当天）和输出渠道
 
-### Step 2: 信息采集与过滤
+### Step 2: 信息采集与过滤 [确定性+LLM]
 
 使用 web_search 工具，按以下优先级和过滤规则采集信息：
 
@@ -159,7 +173,7 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 
 **不接受：** 财经媒体二手分析（分析师报告除外）
 
-### Step 3: 编写日报
+### Step 3: 编写日报 [LLM]
 
 基于已筛选出的有效信息，生成一份面向数据平台从业者的专业日报。
 
@@ -286,7 +300,7 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 - 总量控制在 10-14 条（周一为 14-20 条），宁少勿滥。此为企微版上限；HTML 版可上浮至 16-20 条（周一 20-26 条）
 - 不杜撰数据
 
-### Step 4: 生成输出文件
+### Step 4: 生成输出文件 [确定性+LLM]
 
 1. **Markdown 文件**：`Data+AI全球日报_{date}.md`
    - 每条新闻包含 `> 企微摘要：xxx` 行
@@ -297,7 +311,7 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
    - **不包含企微摘要行**
    - 包含全部条目（企微精简版条目 + HTML 扩展条目）
 
-### Step 5: Review & 修正
+### Step 5: Review & 修正 [LLM]
 
 生成文件后、推送前，必须执行一轮完整 review。review 不通过不得进入 Step 6 推送。
 
@@ -309,13 +323,13 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 5. **格式完整性** — 企微摘要行、来源/摘要/影响三要素、3点是否为趋势判断（15-30字）、总判断是否 ≤120 字且不重复事件细节
 6. **宁缺毋滥** — 各板块条数是否在规定范围内
 
-### Step 6: 推送（按配置）
+### Step 6: 推送（按配置） [确定性]
 
-根据 `daily-brief-config.json` 中的配置，执行推送。支持以下 **9 大渠道**：
+根据 `config.json` 中的配置，执行推送。支持以下 **9 大渠道**（✅ 已验证 / 📦 社区贡献·未验证）：
 
 #### 国内渠道
 
-1. **企业微信**：`scripts/send_wecom.py`
+1. ✅ **企业微信**：`scripts/send_wecom.py`
    - 先发精简摘要版（<4096字节），再发完整版 HTML 文件
    - **摘要采用3层优先级填充**：层级1（标题+今日变化+总判断）→ 层级2（板块标题+新闻标题）→ 层级3（一句话摘要，按剩余空间填充）
    - **摘要中不带任何链接**，保持纯文本阅读体验，来源仅以文字标注
@@ -323,12 +337,12 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
    - 支持防重复推送锁，避免同一日期重复推送
    - 配置：群机器人 Webhook URL → `WECOM_WEBHOOK_URL`
 
-2. **钉钉**：`scripts/send_dingtalk.py`
+2. 📦 **钉钉**：`scripts/send_dingtalk.py`
    - 支持 Markdown 消息 + 链接消息，支持加签安全验证
    - 配置：群机器人 Webhook → `DINGTALK_WEBHOOK_URL`，可选加签 → `DINGTALK_SECRET`
    - 限制：每分钟最多 20 条消息
 
-3. **飞书**：`scripts/send_feishu.py`
+3. 📦 **飞书**：`scripts/send_feishu.py`
    - 支持富文本（post）和交互卡片（含按钮）两种模式
    - 配置：群机器人 Webhook → `FEISHU_WEBHOOK_URL`，可选签名 → `FEISHU_SECRET`
    - 卡片模式：`--card --link-url <URL>`
@@ -336,40 +350,63 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 
 #### 国际渠道
 
-4. **Slack**：`scripts/send_slack.py`
+4. 📦 **Slack**：`scripts/send_slack.py`
    - 使用 Block Kit 富消息格式，支持按钮链接
    - 配置：Incoming Webhook URL → `SLACK_WEBHOOK_URL`
 
-5. **Discord**：`scripts/send_discord.py`
+5. 📦 **Discord**：`scripts/send_discord.py`
    - 使用 Embed 消息格式，支持文件上传
    - 配置：Webhook URL → `DISCORD_WEBHOOK_URL`
    - 限制：Embed 描述 4096 字符，每秒 5 次
 
-6. **Telegram**：`scripts/send_telegram.py`
+6. 📦 **Telegram**：`scripts/send_telegram.py`
    - 通过 Bot API 推送 HTML 格式消息，支持文件上传
    - 配置：Bot Token → `TELEGRAM_BOT_TOKEN`，Chat ID → `TELEGRAM_CHAT_ID`
    - 限制：消息 4096 字符，每秒 30 条
 
-7. **Microsoft Teams**：`scripts/send_teams.py`
+7. 📦 **Microsoft Teams**：`scripts/send_teams.py`
    - 支持 Adaptive Card（推荐）和旧版 MessageCard 格式
    - 配置：Incoming Webhook → `TEAMS_WEBHOOK_URL`
    - 旧版兼容：`--legacy`
 
 #### 通用渠道
 
-8. **邮件**：`scripts/send_email.py`
+8. 📦 **邮件**：`scripts/send_email.py`
    - SMTP 邮件推送，HTML 正文 + 纯文本备选
    - 配置：`SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_TO`
 
-9. **GitHub Pages**：`scripts/deploy_github.py`
+9. ✅ **GitHub Pages**：`scripts/deploy_github.py`
    - 部署到 GitHub Pages 作为公开访问的网页，自动归档历史版本
    - 配置：`GITHUB_TOKEN`, `GITHUB_USER`
+
+## 硬性规则
+
+以下规则不可违反，优先级高于所有其他指引：
+
+1. **时效性红线** — 原始发布日期不在当期时效窗口（工作日24h/周一72h）内的信息一律不纳入，无例外
+2. **一手来源强制** — 每条信息必须可追溯到一手来源（官网/博客/release notes/GitHub/PR Newswire 等），不接受纯媒体二手分析
+3. **不杜撰数据** — 所有数字、日期、版本号必须来自原文，不得推测或编造
+4. **去重自检** — 完成全部板块后必须执行跨板块去重，同一事件最多出现在一个板块
+5. **Review 门禁** — Step 5 不通过不得推送，宁可不发也不发有问题的日报
+6. **宁缺毋滥** — 任何板块不因条目过少而降低准入标准，空板块好于注水板块
+7. **推送权限分级** — 自动化模式（automation）下发现质量问题可自主修正后推送；手动模式下发现问题需等用户确认
+
+## 失败处理
+
+| 场景 | 处理方式 |
+|------|----------|
+| 搜索阶段全部无结果 | 报告「今日无符合条件的信息」，生成空日报模板（仅标题+日期），不推送 |
+| 单一来源不可用（如某网站超时） | 跳过该来源，继续其他搜索，在报告中标注「⚠️ {来源} 未能访问」 |
+| 候选信息全部未通过 Review | 输出审查结果明细，不推送，等用户决策 |
+| 推送失败（webhook 超时/403） | 重试 1 次，仍失败则保存文件到工作区并通知用户手动推送 |
+| 配置文件缺失 | 使用 `scripts/init_config.py` 生成默认配置后继续 |
+| HTML 模板缺失 | 仅生成 Markdown 文件，跳过 HTML 生成，在输出中说明 |
 
 ## 自定义指南
 
 ### 修改关注领域
 
-编辑 `daily-brief-config.json` 中的 `customization` 字段，可自定义：
+编辑 `config.json` 中的 `customization` 字段，可自定义：
 - 关注的行业领域（默认 Data+AI）
 - 厂商优先级列表
 - 开源项目列表
@@ -377,7 +414,7 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 
 ### 添加推送渠道
 
-在 `daily-brief-config.json` 的 `adapters` 中启用渠道并填入配置：
+在 `config.json` 的 `adapters` 中启用渠道并填入配置：
 
 | 渠道 | 配置键 | 类型 | 主要环境变量 |
 |------|--------|------|-------------|
@@ -393,7 +430,7 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 
 ### 调整定时任务
 
-修改 `daily-brief-config.json` 中的 `cron` 配置：
+修改 `config.json` 中的 `cron` 配置：
 ```json
 {
   "schedule": "0 8 * * 1-5",
