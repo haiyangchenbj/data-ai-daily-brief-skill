@@ -5,7 +5,7 @@
 > **[中文文档 →](README_zh.md)**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-4.2-brightgreen.svg)](#changelog)
+[![Version](https://img.shields.io/badge/version-4.3.3-brightgreen.svg)](#changelog)
 [![Platform](https://img.shields.io/badge/platform-CodeBuddy%20%7C%20WorkBuddy-green.svg)](#)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink.svg)](../../sponsors)
 [![Bilingual](https://img.shields.io/badge/docs-EN%20%7C%20中文-orange.svg)](README_zh.md)
@@ -309,6 +309,7 @@ The built-in configuration covers:
 
 | Version | Date | Summary |
 |---------|------|---------|
+| **4.3.3** | 2026-05-29 | Major architectural refactor: 3-layer separation (Editorial Principles / Section Definitions / Workflow) + 2 appendices (MD Format Contract A.1-A.5 / Failure Handling B.1-B.3); **new Step 4.5 mandatory format pre-flight** — generate-then-assert N1 (item count) / N2 (WeChat summary count) / N3 (section count) with strict equality (N1>0, N1==N2, N3==5) and content gates (English section titles, no bold/numbers in 3-points, verdict ≤120 chars); generation-stage failure → mandatory regenerate (no patch-style fixing in review stage); Rule Maintenance Protocol introduced as Section 0 (locate→optimize→record, no patch piling); unified 6-dimension mapping (cost/perf/architecture/governance/eng-efficiency/market-landscape); replace failed site-search with keyword search for CN policy sources; fix cross-month date arithmetic; 0 content deletion — all v4.2 rules preserved as in-place reorganization |
 | **4.2** | 2026-04-14 | Complete rewrite aligned with PROMPT.md v4.2: 6-step workflow with mandatory Review gate (Step 5); confidence tiers (A/B/C) with source-type labeling; hard rules section (6 rules — timeliness, source-only, dedup, Monday 72h, less-is-more, no-link-in-summary); failure handling (6 scenarios); deterministic vs LLM step labeling; actual delivery channels (wecom/github_pages/email) replacing 9 virtual channels; corrected section structure (C.Views & Research / D.Capital & Corporate); config filename fix (config.json not daily-brief-config.json) |
 | **3.1** | 2026-03-25 | WeChat Work summary fix: D/E section regex `\s+` → `\s*` for empty-body sections; link-length optimization |
 | **3.0** | 2026-03-20 | Major restructure: merge C.People & Views + D.Analyst Insights → C.Views & Research; add D.Capital & Corporate (funding/earnings/IPO/M&A with inline type tags); add 3-level information confidence (Level A/B/C); mandatory cross-section dedup self-check; new Step 5 Review & Fix (6 checks before publish); "Top 3 Points" now 15-30 char trend judgments (no product names/numbers); verdict ≤120 chars, no event detail repetition; add dedicated funding/M&A search queries; item count 10-14 (Monday 14-20) |

@@ -1,16 +1,18 @@
 ---
 name: data-ai-daily-brief
-version: "4.3.2"
+version: "4.3.3"
 description: >
   AI-powered industry intelligence daily brief generator for the Data+AI sector.
   Automatically searches, filters, writes, and delivers structured daily briefings
   covering data platforms, lakehouse, streaming, governance, and data infrastructure.
-  Customizable for any industry via config.json. Includes 6-step workflow with mandatory
-  review gate, confidence-level filtering, and multi-channel delivery.
+  Customizable for any industry via config.json. Includes 7-step workflow with
+  mandatory machine-checkable format pre-flight (Step 4.5) and review gate,
+  confidence-level filtering, and multi-channel delivery.
 
   AI 驱动的 Data+AI 行业情报日报生成器。自动搜集、过滤、撰写并推送结构化行业日报，
   覆盖数据平台、湖仓一体、流处理、数据治理等领域。支持通过 config.json 切换至任意行业。
-  含 6 步工作流（含审核门禁）、置信度分层过滤、多渠道推送。
+  含 7 步工作流（新增 Step 4.5 强制格式预检 + Step 5 业务审核双门禁）、
+  置信度分层过滤、多渠道推送。
 read_when:
   - daily brief
   - 日报
@@ -311,17 +313,42 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
    - **不包含企微摘要行**
    - 包含全部条目（企微精简版条目 + HTML 扩展条目）
 
-### Step 5: Review & 修正 [LLM]
+### Step 4.5: 格式预检（机器化自检，强制执行）[确定性]
 
-生成文件后、推送前，必须执行一轮完整 review。review 不通过不得进入 Step 6 推送。
+⚠️ **此步骤生成 MD 后立即执行，强制输出三个统计数字 + 全部断言。不输出 = 直接 fail，回到 Step 3 重新生成。**
 
-**Review 检查项：**
-1. **时效性合规** — 逐条核对发布日期是否在时效窗口内
-2. **跨板块去重** — 同一事件出现在两个以上板块 → 合并
+**强制输出格式：**
+
+```
+📐 格式预检
+- 条目数（^### \d+\.）= N1
+- 企微摘要数（^> 企微摘要：）= N2
+- 板块数（^## [A-E]\.）= N3
+- 断言：N1 > 0 ？ ✅ / ❌（至少 1 条；N1=0 直接 fail）
+- 断言：N1 == N2 ？ ✅ / ❌
+- 断言：N3 == 5 ？ ✅ / ❌
+- 板块标题语言（必须英文 5 个）：✅ / ❌
+- 「3点」内是否含产品全称/版本号/具体数字/加粗：❌ 干净 / ⚠️ 命中
+- 总判断字数 = X（≤120）：✅ / ❌
+- 结论：✅ 通过 → 进入 Step 5 / ❌ 不通过 → 重新生成
+```
+
+**任何 ❌ → 回到 Step 3 重新生成对应内容**，禁止在 Step 5 review 阶段修补条目数差或补全摘要。这是为了拦截"格式漂移导致企微推送内容缺失"的根本原因。
+
+### Step 5: Review & 修正（业务层 7 项）[LLM]
+
+生成文件后、推送前，必须执行一轮完整 review。review 不通过不得进入 Step 6 推送。**前置条件：Step 4.5 必须 ✅ 通过。**
+
+**Review 检查项（7 项）：**
+1. **时效性合规** — 逐条核对发布日期是否在时效窗口内（强制日期推导 + 逐条验证表）
+2. **跨板块去重** — 同一事件出现在两个以上板块 → 合并到优先级最高板块
 3. **板块准入合规** — 逐条检查是否符合所在板块准入标准
-4. **信源质量** — 每条是否有明确一手来源链接
-5. **格式完整性** — 企微摘要行、来源/摘要/影响三要素、3点是否为趋势判断（15-30字）、总判断是否 ≤120 字且不重复事件细节
-6. **宁缺毋滥** — 各板块条数是否在规定范围内
+4. **信源质量** — 每条是否有明确一手来源链接（C 板块允许高可信二手）
+5. **内容质量** — 「3点」是否为趋势判断（15-30字，非事件摘要）；总判断 ≤120 字、不重复事件细节；每条按「事实 → 影响判断」展开
+6. **搜索覆盖完整性** — 第一优先级厂商必须全部定向搜索过；内容偏少时必须扩展搜索而非凑数
+7. **宁缺毋滥** — 各板块条数是否在规定范围内，无凑数低质条目
+
+> 格式完整性检查由 Step 4.5 机器化预检兜底，此处不重复检查。如出现格式问题，回到 Step 3 重生而非 review 修补。
 
 ### Step 6: 推送（按配置） [确定性]
 
@@ -387,17 +414,20 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 2. **一手来源强制** — 每条信息必须可追溯到一手来源（官网/博客/release notes/GitHub/PR Newswire 等），不接受纯媒体二手分析
 3. **不杜撰数据** — 所有数字、日期、版本号必须来自原文，不得推测或编造
 4. **去重自检** — 完成全部板块后必须执行跨板块去重，同一事件最多出现在一个板块
-5. **Review 门禁** — Step 5 不通过不得推送，宁可不发也不发有问题的日报
-6. **宁缺毋滥** — 任何板块不因条目过少而降低准入标准，空板块好于注水板块
-7. **推送权限分级** — 自动化模式（automation）下发现质量问题可自主修正后推送；手动模式下发现问题需等用户确认
+5. **Step 4.5 格式预检（v4.3.3 新增）** — 生成 MD 后必须输出 N1/N2/N3 三个统计数字 + 全部断言；任一 ❌ 一律回到 Step 3 重新生成，禁止在 Review 阶段修补条目数差或补全摘要
+6. **Review 门禁** — Step 5 不通过不得推送，宁可不发也不发有问题的日报
+7. **宁缺毋滥** — 任何板块不因条目过少而降低准入标准，空板块好于注水板块
+8. **推送权限分级** — 自动化模式（automation）下发现 Review 业务层问题可自主修正后推送；生成阶段崩溃（Step 4.5 ❌）一律重生不允许自主修补；手动模式下发现问题需等用户确认
 
 ## 失败处理
 
 | 场景 | 处理方式 |
 |------|----------|
+| **生成阶段格式崩溃（Step 4.5 ❌）** | **回到 Step 3 重新生成对应板块或全文，不允许 review 阶段修补条目数差** |
 | 搜索阶段全部无结果 | 报告「今日无符合条件的信息」，生成空日报模板（仅标题+日期），不推送 |
 | 单一来源不可用（如某网站超时） | 跳过该来源，继续其他搜索，在报告中标注「⚠️ {来源} 未能访问」 |
 | 候选信息全部未通过 Review | 输出审查结果明细，不推送，等用户决策 |
+| 候选信息严重不足（A-D 合计 < 5 条） | 优先扩展搜索；扩展后仍不足则将边界条目降级到 E 板块（标注【降级】）；仍不足则报告并暂停等待用户决策 |
 | 推送失败（webhook 超时/403） | 重试 1 次，仍失败则保存文件到工作区并通知用户手动推送 |
 | 配置文件缺失 | 使用 `scripts/init_config.py` 生成默认配置后继续 |
 | HTML 模板缺失 | 仅生成 Markdown 文件，跳过 HTML 生成，在输出中说明 |

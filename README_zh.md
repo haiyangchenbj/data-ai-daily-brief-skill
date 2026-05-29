@@ -5,7 +5,7 @@
 > **[English Documentation →](README.md)**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-4.2-brightgreen.svg)](#changelog)
+[![Version](https://img.shields.io/badge/version-4.3.3-brightgreen.svg)](#changelog)
 [![Platform](https://img.shields.io/badge/platform-CodeBuddy%20%7C%20WorkBuddy-green.svg)](#)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink.svg)](../../sponsors)
 [![Bilingual](https://img.shields.io/badge/docs-EN%20%7C%20中文-orange.svg)](README.md)
@@ -309,6 +309,7 @@ python scripts/deploy_github.py 2026-03-11       # GitHub Pages
 
 | 版本 | 日期 | 更新摘要 |
 |------|------|---------|
+| **4.3.3** | 2026-05-29 | 重大架构重构：三层分离（编辑准则 / 板块定义 / 工作流程）+ 两附录（附录 A. MD 格式合约 A.1-A.5 / 附录 B. 失败处理 B.1-B.3）；**新增 Step 4.5 强制格式预检** —— 生成 MD 后必须输出 N1（条目数）/ N2（企微摘要数）/ N3（板块数）三个统计数字 + 全部断言（N1>0、N1==N2、N3==5、板块标题英文、3点无加粗/数字、总判断 ≤120 字）；生成阶段任一断言 ❌ → 一律回到 Step 3 重生（禁止 Review 阶段补丁式修补）；头部第 0 节新增「规则维护准则」（定位现有规则 → 优化原条款 → 同步 changelog/MEMORY，禁止补丁式叠加）；映射维度统一为六维（成本/性能/架构/治理/工程效率/采购市场格局）；失效国内 site 搜索替换为关键词直搜（信通院/赛迪/国家数据局/电子标准院）；跨月日期算术改为强制日历查询；0 内容删除 —— v4.2 全部规则、搜索源、板块定义、案例、教训、模板均已原文归位 |
 | **4.2** | 2026-04-14 | 完全重写对齐 PROMPT.md v4.2：6步工作流含强制 Review 门禁(Step 5)；置信度三级分层(A/B/C)含来源类型标注；硬性规则(6条——时效性/仅一手源/去重/周一72h/少即是多/摘要无链接)；失败处理(6种场景)；步骤标注[确定性]/[LLM]；实际推送渠道(企微/GitHub Pages/邮件)替换9种虚拟渠道；修正板块结构(C.Views & Research / D.Capital & Corporate)；配置文件名修正(config.json) |
 | **3.1** | 2026-03-25 | 企微摘要修复：D/E 板块正则 `\s+` → `\s*` 适配空内容板块；链接长度优化 |
 | **3.0** | 2026-03-20 | 重大结构重组：C.People & Views + D.Analyst Insights 合并为 C.Views & Research；新增 D.Capital & Corporate（投融资/财报/IPO/收购兼并，带 inline 类型标签）；新增信息置信度三级分层（Level A/B/C）；强制跨板块去重自检；新增 Step 5 Review & 修正（6项检查）；「今日3点」改为 15-30 字趋势判断（不含产品名/数字）；总判断 ≤120 字，不可重复事件细节；新增投融资定向搜索；总量调整为 10-14 条（周一 14-20 条） |
