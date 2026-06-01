@@ -1,6 +1,6 @@
 ---
 name: data-ai-daily-brief
-version: "4.3.3"
+version: "4.3.5"
 description: >
   AI-powered industry intelligence daily brief generator for the Data+AI sector.
   Automatically searches, filters, writes, and delivers structured daily briefings
@@ -328,12 +328,23 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 - 断言：N1 == N2 ？ ✅ / ❌
 - 断言：N3 == 5 ？ ✅ / ❌
 - 板块标题语言（必须英文 5 个）：✅ / ❌
+- 「3点」格式：必须 `**今日最重要的3点：**` + 有序列表 1./2./3.：✅ / ❌
 - 「3点」内是否含产品全称/版本号/具体数字/加粗：❌ 干净 / ⚠️ 命中
 - 总判断字数 = X（≤120）：✅ / ❌
+- 字段名合规（v4.3.4 新增，逐板块核对四要素，禁止自创字段名）：✅ / ❌
+  - A 板块：必须含 `**来源：**` + `**摘要：**` + `**为什么对数据平台重要：**` + `> 企微摘要：`
+  - B 板块：必须含 `**来源：**` + `**摘要：**` + `**对数据平台的影响：**` + `> 企微摘要：`
+  - C 板块：必须含 `**来源：**` + `**核心观点：**` + `**映射到数据平台的判断：**` + `> 企微摘要：`
+  - D 板块：必须含 `**来源：**` + `**核心数据：**` + `**摘要：**` + `**对数据平台的影响：**` + `> 企微摘要：`
+  - E 板块：必须含 `**来源：**` + `**为什么值得继续看：**` + `**需要等待什么信号确认：**` + `> 企微摘要：`
+  - ❌ 禁止自创字段名（如 `**影响维度：**`、`**So What：**` 替代正式字段）
+- 字段顺序（v4.3.4 新增）：来源行在标题后第一行，企微摘要行在条目最后一行：✅ / ❌
 - 结论：✅ 通过 → 进入 Step 5 / ❌ 不通过 → 重新生成
 ```
 
 **任何 ❌ → 回到 Step 3 重新生成对应内容**，禁止在 Step 5 review 阶段修补条目数差或补全摘要。这是为了拦截"格式漂移导致企微推送内容缺失"的根本原因。
+
+> **v4.3.4 修复（2026-06-01）：** v4.3 首次执行时 LLM 将 PROMPT 1.2 节的"六维映射"概念内化为输出字段 `**影响维度：**`，偏离了 A.3 中的正式模板，且原 Step 4.5 只检查机械特征（编号/摘要数/板块数）未检查字段名 → 本次新增字段名合规、字段顺序、「3点」格式三项断言，杜绝同类漂移。
 
 ### Step 5: Review & 修正（业务层 7 项）[LLM]
 
@@ -353,6 +364,14 @@ Iceberg、Hudi、Paimon、Delta Lake、Trino、Spark、Flink、Ray、Airflow、K
 ### Step 6: 推送（按配置） [确定性]
 
 根据 `config.json` 中的配置，执行推送。支持以下 **9 大渠道**（✅ 已验证 / 📦 社区贡献·未验证）：
+
+> **⚠️ Windows 用户注意（v4.3.4 新增）：** 在 Windows 默认 GBK locale 下直接运行 `python publish.py` 会因 emoji 输出（如 `✅`）触发 `UnicodeEncodeError`，导致企微通道在格式预检打印阶段崩溃，但 GitHub Pages 等先执行的通道已成功。
+>
+> **正确命令：** `PYTHONIOENCODING=utf-8 python -X utf8 publish.py [date] [flags]`
+>
+> **永久修复方案：** 在 `publish.py` 顶部加 `sys.stdout.reconfigure(encoding='utf-8')`。
+>
+> **若部分通道失败：** 用 `--channel <failed_channel> --force` 单独重推，避免重复推送已成功的通道。
 
 #### 国内渠道
 
