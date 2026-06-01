@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [4.3.5] - 2026-06-01
+
+### Changed
+- **Republish only** to fix display-name regression introduced in 4.3.4 (the `+` in "Data+AI" was lost when ClawHub auto-derived the display name from a temporary working directory). Display name explicitly pinned to "Data+AI Daily Brief Skill" via `--name` flag. Content identical to 4.3.4.
+
+## [4.3.4] - 2026-06-01
+
+### Added
+- **Step 4.5 — three new field-level assertions** to close drift loopholes that the original mechanical checks (item count / summary count / section count) could not catch:
+  - **Field name compliance** — per-section verification of the four-element template (e.g. A: `**来源：**` + `**摘要：**` + `**为什么对数据平台重要：**` + `> 企微摘要：`); explicitly forbids self-invented fields like `**影响维度：**` or `**So What：**` substituting required fields.
+  - **Field order** — `**来源：**` must be the first line after the heading; `> 企微摘要：` must be the last line of each item.
+  - **3-points format** — must use `**今日最重要的3点：**` followed by an ordered list `1./2./3.`; rejects any heading-style or unordered-list variants.
+- **Windows UTF-8 publish guidance** — explicit warning in Step 6 that on Windows GBK locale, `print("✅")` in `publish.py` triggers `UnicodeEncodeError`, killing the wecom channel while GitHub Pages had already succeeded; correct invocation: `PYTHONIOENCODING=utf-8 python -X utf8 publish.py ...`. Permanent fix recommendation: add `sys.stdout.reconfigure(encoding='utf-8')` to `publish.py` top.
+
+### Fixed
+- **First-run drift after v4.3 refactor** — on 2026-06-01 the LLM internalized the v4.3 Section 1.2 "six-dimension mapping" concept as an output field (`**影响维度：**`), bypassing the formal A.3 four-element template across all sections. v4.3.3's Step 4.5 only validated mechanical features and false-passed this drift. v4.3.4 closes the gap with field-name and field-order assertions.
+- **Cross-channel publish race on Windows** — when `publish.py` crashes mid-flight due to encoding issues, earlier channels (e.g. GitHub Pages) succeed but later channels (e.g. wecom) fail silently with no rollback. Now documented as a known issue with both temporary (env vars) and permanent (`sys.stdout.reconfigure`) fixes.
+
+### Preserved
+- All v4.3.3 rules, search queries, vendor lists, section definitions, item-count limits, format contracts (Appendix A), and failure handling (Appendix B) are preserved verbatim. v4.3.4 is purely additive on Step 4.5 assertions and Step 6 platform-specific guidance.
+
 ## [4.3.3] - 2026-05-29
 
 ### Added
