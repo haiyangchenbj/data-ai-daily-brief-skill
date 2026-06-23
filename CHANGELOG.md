@@ -5,12 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# Changelog
+## [5.0.0] - 2026-06-23
 
-All notable changes to this project will be documented in this file.
+### Changed
+- **English-first SKILL.md.** The full body is rewritten in English. The framework — workflow, confidence tiers, section definitions, format contract, hard rules, failure handling — is now industry-agnostic, with all Data+AI specifics isolated into a clearly-marked `[Default Profile: Data+AI]` block that users replace when targeting another domain.
+- **Display name → "Industry Daily Brief".** Repositions the skill as a general engine that ships with a Data+AI example, rather than a Data+AI-only tool. Slug remains `data-ai-daily-brief` to preserve version history.
+- **Value-first description.** Rewritten to lead with the outcome (any industry → daily brief, 9 channels, machine-checked formatting) instead of a feature/keyword list.
+- **WeChat-summary cap relaxed 30–80 → ≤120 chars.** The 80-char ceiling could not accommodate high-density days (e.g. major vendor summits); 120 covers >90% of cases and the WeChat push script adaptively trims overflow.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+### Added (backfilled rules accumulated since 4.3.5)
+- **Source links must be Markdown `[text](url)`** — Hard Rule #10 + Step 4.5 assertion. Bare `（https://...）` text passes the old "source line exists" check but renders as non-clickable plain text in HTML.
+- **Step 4.5 expanded** with four machine-checkable assertions: source-link format, `---` item separator presence, WeChat-summary ≤120 chars, and Top-3 char-count (15–30). Plus numbering-reset (each section restarts at 1) and field-order assertions.
+- **Stale-news guard** — a "big news" item from search results must have its *original* publish date independently confirmed; search ranking is not recency.
+- **Stability-first** promoted to Hard Rule #1 — zero format drift / zero missed push / zero manual repair; no new features or structural changes unless explicitly requested.
+- **Non-ASCII filename detection** — Failure Handling note to use `find` not `ls`, because shells like Git Bash mishandle quoting of Chinese/non-ASCII paths and report false "file missing".
+
+### Preserved
+- All 4.3.x rules, search strategy, vendor/source lists, section definitions, item-count limits, confidence tiers, and failure handling are preserved — reorganized and translated, not removed. 5.0.0 is a structural + language rework with additive rule backfill.
 
 ## [4.3.5] - 2026-06-01
 
