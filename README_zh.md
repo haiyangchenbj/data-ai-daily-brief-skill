@@ -1,11 +1,11 @@
-# 📰 AI 驱动的行业情报日报
+# 📰 行业情报日报 · Industry Daily Brief
 
 > **把任何行业变成一份每日情报简报 — 自动搜索、过滤、编写、多渠道推送。**
 >
 > **[English Documentation →](README.md)**
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-4.3.3-brightgreen.svg)](#changelog)
+[![Version](https://img.shields.io/badge/version-5.0.0-brightgreen.svg)](#changelog)
 [![Platform](https://img.shields.io/badge/platform-CodeBuddy%20%7C%20WorkBuddy-green.svg)](#)
 [![GitHub Sponsors](https://img.shields.io/badge/Sponsor-%E2%9D%A4-pink.svg)](../../sponsors)
 [![Bilingual](https://img.shields.io/badge/docs-EN%20%7C%20中文-orange.svg)](README.md)
@@ -309,6 +309,7 @@ python scripts/deploy_github.py 2026-03-11       # GitHub Pages
 
 | 版本 | 日期 | 更新摘要 |
 |------|------|---------|
+| **5.0.0** | 2026-06-23 | **重大重构 —— 英文优先 + 行业无关化。** SKILL.md 正文全面英文化；框架（工作流 / 置信度分层 / 板块定义 / 格式合约 / 硬性规则）与明确标注的 `[Default Profile: Data+AI]` 示例块分离，使引擎读起来真正可切换任意行业。显示名改为 **Industry Daily Brief**。简介改为价值前置。回填 4.3.5 以来累积的全部格式/质量规则：**来源链接强制 Markdown `[text](url)`**（裸 URL 会导致 HTML 链接失效）；**企微摘要上限 30–80 → ≤120 字**；**Step 4.5 扩展**新增来源链接格式、`---` 条目分隔符、企微摘要 ≤120、3点字数 15–30 等断言；编号重置与字段顺序断言；旧闻防护；**稳定优先**提升为硬性规则 #1；中文等非 ASCII 文件名检测改用 `find` 而非 `ls`。 |
 | **4.3.3** | 2026-05-29 | 重大架构重构：三层分离（编辑准则 / 板块定义 / 工作流程）+ 两附录（附录 A. MD 格式合约 A.1-A.5 / 附录 B. 失败处理 B.1-B.3）；**新增 Step 4.5 强制格式预检** —— 生成 MD 后必须输出 N1（条目数）/ N2（企微摘要数）/ N3（板块数）三个统计数字 + 全部断言（N1>0、N1==N2、N3==5、板块标题英文、3点无加粗/数字、总判断 ≤120 字）；生成阶段任一断言 ❌ → 一律回到 Step 3 重生（禁止 Review 阶段补丁式修补）；头部第 0 节新增「规则维护准则」（定位现有规则 → 优化原条款 → 同步 changelog/MEMORY，禁止补丁式叠加）；映射维度统一为六维（成本/性能/架构/治理/工程效率/采购市场格局）；失效国内 site 搜索替换为关键词直搜（信通院/赛迪/国家数据局/电子标准院）；跨月日期算术改为强制日历查询；0 内容删除 —— v4.2 全部规则、搜索源、板块定义、案例、教训、模板均已原文归位 |
 | **4.2** | 2026-04-14 | 完全重写对齐 PROMPT.md v4.2：6步工作流含强制 Review 门禁(Step 5)；置信度三级分层(A/B/C)含来源类型标注；硬性规则(6条——时效性/仅一手源/去重/周一72h/少即是多/摘要无链接)；失败处理(6种场景)；步骤标注[确定性]/[LLM]；实际推送渠道(企微/GitHub Pages/邮件)替换9种虚拟渠道；修正板块结构(C.Views & Research / D.Capital & Corporate)；配置文件名修正(config.json) |
 | **3.1** | 2026-03-25 | 企微摘要修复：D/E 板块正则 `\s+` → `\s*` 适配空内容板块；链接长度优化 |
