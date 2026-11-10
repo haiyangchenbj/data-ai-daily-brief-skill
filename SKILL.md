@@ -2,7 +2,7 @@
 slug: data-ai-daily-brief
 displayName: Data AI Daily Brief
 name: data-ai-daily-brief
-version: "5.0.5"""
+version: "5.0.6"
 description: >
   Turn any industry into a daily intelligence briefing. An AI agent searches,
   filters, writes, and delivers structured daily briefs to 9 channels — with
@@ -121,7 +121,7 @@ Produce a professional brief for practitioners in the target industry, based onl
 #### Confidence Tiers
 
 - **Level A — confirmed fact:** first-hand source (official site/blog, GitHub release, earnings filing, live event). → may go into A / B / C / D.
-- **Level B — high-trust secondary:** reliable media (Reuters, Bloomberg, TechCrunch) but no first-hand doc yet. → may cautiously go into A / C with a "media report / no official filing" label; prefer the Watchlist.
+- **Level B — high-trust secondary:** reliable media (Reuters, Bloomberg, TechCrunch) but no first-hand doc yet. → may cautiously go into C with a "media report / no official filing" label; prefer the Watchlist.
 - **Level C — indirect signal / unverified rumor:** social leaks, community chatter, unmerged-PR speculation. → Watchlist only.
 
 #### Deduplication
