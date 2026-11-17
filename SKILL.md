@@ -2,7 +2,7 @@
 slug: data-ai-daily-brief
 displayName: Data AI Daily Brief
 name: data-ai-daily-brief
-version: "5.0.6"
+version: "5.0.7"
 description: >
   Turn any industry into a daily intelligence briefing. An AI agent searches,
   filters, writes, and delivers structured daily briefs to 9 channels — with
@@ -284,7 +284,7 @@ Per `config.json`, push to any of **9 channels** (✅ verified / 📦 community-
 | Scenario | Action |
 |----------|--------|
 | **Generation-stage format crash (Step 4.5 ❌)** | Return to Step 3 and regenerate the affected section or whole doc; never patch item-count gaps in review |
-| Search yields nothing | Report "no qualifying information today", generate an empty template (title + date only), do not push |
+| Search yields nothing | Report "no qualifying information today", generate an empty template (title + date only) and skip Step 4.5 pre-flight (N1=0 is expected here, not a format crash), do not push |
 | Thin input day (items below profile minimum) | Mark the edition THIN in the judgment and state it explicitly; never pad with stale news to fill the template |
 | A single source is unavailable | Skip it, continue other searches, note "⚠️ {source} unreachable" |
 | All candidates fail review | Output the review detail, do not push, await user decision |
